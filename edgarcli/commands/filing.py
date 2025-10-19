@@ -5,7 +5,7 @@ from edgar import Company, Filing
 from rich import print as rprint
 from rich.console import Console
 from edgarcli.config import ensure_identity
-from edgarcli.utils import handle_edgar_error, maybe_interactive
+from edgarcli.utils import handle_edgar_error
 
 
 @click.command()
@@ -35,14 +35,9 @@ from edgarcli.utils import handle_edgar_error, maybe_interactive
     is_flag=True,
     help="Display filing text content",
 )
-@click.option(
-    "-i", "--interactive",
-    is_flag=True,
-    help="Drop into interactive REPL after displaying filing info",
-)
 @click.pass_context
 @handle_edgar_error
-def filing(ctx, ticker_or_cik, accession_number, form, latest, n, text, interactive):
+def filing(ctx, ticker_or_cik, accession_number, form, latest, n, text):
     """Get SEC filings with flexible access patterns.
 
     You can retrieve filings in three ways:
@@ -68,12 +63,8 @@ def filing(ctx, ticker_or_cik, accession_number, form, latest, n, text, interact
 
         # Show text instead of just metadata
         edgarcli filing AAPL --form 10-K --latest --text
-
-        # Interactive mode
-        edgarcli filing AAPL --form 10-K --latest -i
     """
     ensure_identity(ctx)
-    ctx.obj["interactive"] = interactive
 
     # Validate argument/option combinations
     if accession_number:
@@ -92,7 +83,6 @@ def filing(ctx, ticker_or_cik, accession_number, form, latest, n, text, interact
         # Get filing by accession number
         filing_obj = _get_filing_by_accession(accession_number)
         _display_filing(filing_obj, text)
-        maybe_interactive(ctx, filing_obj, "Filing object")
 
     elif ticker_or_cik:
         # Pattern 2 & 3: By ticker/CIK + form
@@ -126,7 +116,6 @@ def filing(ctx, ticker_or_cik, accession_number, form, latest, n, text, interact
                 )
             filing_obj = filings.latest(1)
             _display_filing(filing_obj, text)
-            maybe_interactive(ctx, filing_obj, "Filing object")
 
         else:  # n is specified
             # Pattern 3: N filings
@@ -155,8 +144,6 @@ def filing(ctx, ticker_or_cik, accession_number, form, latest, n, text, interact
             else:
                 # Single filing
                 _display_filing(latest_n, text)
-
-            maybe_interactive(ctx, latest_n, f"{form} filings collection")
 
     else:
         # No arguments provided

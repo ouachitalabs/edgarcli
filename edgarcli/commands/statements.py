@@ -34,14 +34,9 @@ STATEMENT_TYPES = ["income", "balance", "cashflow", "all"]
     default="income",
     help="Statement type (income, balance, cashflow, all)",
 )
-@click.option(
-    "-i", "--interactive",
-    is_flag=True,
-    help="Drop into interactive REPL after displaying statements",
-)
 @click.pass_context
 @handle_edgar_error
-def statements(ctx, ticker_or_cik, accession_number, form, latest, statement, interactive):
+def statements(ctx, ticker_or_cik, accession_number, form, latest, statement):
     """Get financial statements from SEC filings.
 
     You can retrieve statements in two ways:
@@ -64,12 +59,8 @@ def statements(ctx, ticker_or_cik, accession_number, form, latest, statement, in
 
         # Specific filing by accession
         edgarcli statements --accession-number 0001234567-23-000001
-
-        # Interactive mode
-        edgarcli statements AAPL --form 10-K -i
     """
     ensure_identity(ctx)
-    ctx.obj["interactive"] = interactive
 
     # Validate argument/option combinations
     if accession_number:
@@ -164,59 +155,6 @@ def statements(ctx, ticker_or_cik, accession_number, form, latest, statement, in
         except Exception as e:
             click.echo(f"⚠️  Cash flow statement not available: {e}")
         click.echo()
-
-    # Enter interactive mode if requested
-    if interactive:
-        from edgarcli.utils import launch_interactive_repl
-
-        banner = f"""
-edgarcli Interactive Mode - Financial Statements
-================================================
-The filing is available as: filing
-The financials are available as: financials
-
-Available statements:
-  - financials.income_statement
-  - financials.balance_sheet
-  - financials.cashflow_statement
-
-Convert to DataFrame:
-  - financials.income_statement.to_dataframe()
-
-Available imports:
-  - Company, Filing, Filings, get_filings
-  - set_identity, get_identity
-"""
-
-        # Try to pre-fetch statements, but don't fail if they're not available
-        try:
-            income_stmt = financials.income_statement()
-        except Exception:
-            income_stmt = None
-        try:
-            balance_stmt = financials.balance_sheet()
-        except Exception:
-            balance_stmt = None
-        try:
-            cashflow_stmt = financials.cash_flow_statement()
-        except Exception:
-            cashflow_stmt = None
-
-        local_vars = {
-            "filing": filing_obj,
-            "financials": financials,
-            "income_statement": income_stmt,
-            "balance_sheet": balance_stmt,
-            "cashflow_statement": cashflow_stmt,
-            "Company": Company,
-            "Filing": Filing,
-            "Filings": Filings,
-            "get_filings": get_filings,
-            "set_identity": set_identity,
-            "get_identity": get_identity,
-        }
-
-        launch_interactive_repl(banner, local_vars)
 
 
 def _get_filing_by_accession(accession_number: str):

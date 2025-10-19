@@ -24,3 +24,4 @@ ENV/
 
 # Development/scratch files
 .claude/
+*TODO*

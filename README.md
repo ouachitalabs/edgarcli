@@ -26,8 +26,8 @@ edgarcli filing AAPL --form 10-K --latest
 # Get financial statements
 edgarcli statements AAPL --form 10-Q --statement income
 
-# Interactive mode (drop into IPython REPL)
-edgarcli company AAPL -i
+# Interactive mode - drop into Python REPL with edgar pre-configured
+edgarcli -i
 ```
 
 ## Commands
@@ -38,7 +38,28 @@ edgarcli company AAPL -i
 - `filings` - List historical filings for a company
 - `statements` - Get financial statements from filings
 
-All commands support `--help` for detailed options and `-i` for interactive mode.
+All commands support `--help` for detailed options.
+
+## Interactive Mode
+
+Use `edgarcli -i` to launch an IPython REPL with the edgar library pre-configured:
+
+```bash
+edgarcli -i
+```
+
+The interactive environment includes:
+- Full `edgar` module access
+- Identity automatically configured
+- Convenient imports: `Company`, `Filing`, `Filings`, `get_filings`
+
+Example session:
+```python
+>>> company = Company("AAPL")
+>>> filings = company.get_filings(form="10-K")
+>>> filing = filings.latest()
+>>> filing.financials
+```
 
 ## Configuration
 

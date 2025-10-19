@@ -4,7 +4,7 @@ import click
 from edgar import Company
 from rich import print as rprint
 from edgarcli.config import ensure_identity
-from edgarcli.utils import handle_edgar_error, maybe_interactive
+from edgarcli.utils import handle_edgar_error
 
 
 @click.command()
@@ -24,14 +24,9 @@ from edgarcli.utils import handle_edgar_error, maybe_interactive
     is_flag=True,
     help="Show only the most recent filing",
 )
-@click.option(
-    "-i", "--interactive",
-    is_flag=True,
-    help="Drop into interactive REPL after displaying filings",
-)
 @click.pass_context
 @handle_edgar_error
-def filings(ctx, ticker_or_cik, form, limit, latest, interactive):
+def filings(ctx, ticker_or_cik, form, limit, latest):
     """List historical filings for a company.
 
     TICKER_OR_CIK can be:
@@ -43,10 +38,8 @@ def filings(ctx, ticker_or_cik, form, limit, latest, interactive):
         edgarcli filings AAPL --form 10-K
         edgarcli filings AAPL --form 10-Q --limit 10
         edgarcli filings TSLA --latest
-        edgarcli filings AAPL -i
     """
     ensure_identity(ctx)
-    ctx.obj["interactive"] = interactive
 
     # Look up company
     comp = Company(ticker_or_cik)
@@ -77,6 +70,3 @@ def filings(ctx, ticker_or_cik, form, limit, latest, interactive):
 
     # Show summary
     click.echo(f"\n{len(filings_list)} filing(s) displayed")
-
-    # Enter interactive mode if requested
-    maybe_interactive(ctx, filings_list, "Filings collection")
